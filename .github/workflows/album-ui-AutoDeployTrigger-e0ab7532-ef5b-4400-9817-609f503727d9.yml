@@ -1,0 +1,42 @@
+name: Trigger auto deployment for album-ui
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/album-ui-AutoDeployTrigger-e0ab7532-ef5b-4400-9817-609f503727d9.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ALBUMUI_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: acaalbumssogogolf.azurecr.io
+          registryUsername: ${{ secrets.ALBUMUI_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ALBUMUI_REGISTRY_PASSWORD }}
+          containerAppName: album-ui
+          resourceGroup: album-containerapps
+          imageToBuild: acaalbumssogogolf.azurecr.io/album-ui:${{ github.sha }}
+          
+
+     
+
